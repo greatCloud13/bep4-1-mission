@@ -23,7 +23,7 @@ public class CashCompleteOrderPaymentUseCase {
             customerWallet.credit(
                     pgPaymentAmount,
                     CashLog.EventType.충전__PG결제_토스페이먼츠,
-                    "Order",
+                    order.getModelTypeCode(),
                     order.getId()
             );
         }
@@ -34,14 +34,14 @@ public class CashCompleteOrderPaymentUseCase {
             customerWallet.debit(
                     order.getSalePrice(),
                     CashLog.EventType.사용__주문결제,
-                    "Order",
+                    order.getModelTypeCode(),
                     order.getId()
             );
 
             holdingWallet.credit(
                     order.getSalePrice(),
                     CashLog.EventType.임시보관__주문결제,
-                    "Order",
+                    order.getModelTypeCode(),
                     order.getId()
             );
 
@@ -55,10 +55,10 @@ public class CashCompleteOrderPaymentUseCase {
             eventPublisher.publish(
                     new CashOrderPaymentFailedEvent(
                             "400-1",
-                            "충전은 완료했지만 %d번 주문을 결제완료처리를 하기에는 예치금이 부족합니다.".formatted(order.getId()),
+                            "충전은 완료했지만 %번 주문을 결제완료처리를 하기에는 예치금이 부족합니다.".formatted(order.getId()),
                             order,
                             pgPaymentAmount,
-                            order.getSalePrice() - customerWallet.getBalance()
+                            pgPaymentAmount - customerWallet.getBalance()
                     )
             );
         }
