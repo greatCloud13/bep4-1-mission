@@ -1,28 +1,32 @@
 package com.back.boundedContext.payout.app;
 
 import com.back.boundedContext.payout.domain.Payout;
-import com.back.boundedContext.payout.domain.PayoutMember;
-import com.back.boundedContext.payout.out.PayoutMemberRepository;
-import com.back.boundedContext.payout.out.PayoutRepository;
+import com.back.shared.market.dto.OrderDto;
+import com.back.shared.member.dto.MemberDto;
 import com.back.shared.payout.dto.PayoutMemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class PayoutCreatePayoutUseCase {
-    private final PayoutRepository payoutRepository;
-    private final PayoutMemberRepository payoutMemberRepository;
+public class PayoutFacade {
+    private final PayoutSyncMemberUseCase payoutSyncMemberUseCase;
+    private final PayoutCreatePayoutUseCase payoutCreatePayoutUseCase;
+    private final PayoutAddPayoutCandidateItemsUseCase payoutAddPayoutCandidateItemsUseCase;
 
+    @Transactional
+    public void syncMember(MemberDto member) {
+        payoutSyncMemberUseCase.syncMember(member);
+    }
+
+    @Transactional
     public Payout createPayout(PayoutMemberDto payee) {
-        PayoutMember _payee = payoutMemberRepository.getReferenceById(payee.getId());
+        return payoutCreatePayoutUseCase.createPayout(payee);
+    }
 
-        Payout payout = payoutRepository.save(
-                new Payout(
-                        _payee
-                )
-        );
-
-        return payout;
+    @Transactional
+    public void addPayoutCandidateItems(OrderDto order) {
+        payoutAddPayoutCandidateItemsUseCase.addPayoutCandidateItems(order);
     }
 }
